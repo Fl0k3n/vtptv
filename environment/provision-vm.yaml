@@ -1,0 +1,6 @@
+---
+- name: Install Docker
+  import_playbook: install-docker.yaml
+
+- name: Install Kathara
+  import_playbook: install-kathara.yaml

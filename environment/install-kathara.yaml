@@ -1,0 +1,28 @@
+---
+- name: Install Kathara
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install xterm
+      apt:
+        name: xterm
+        state: present
+        update_cache: yes
+
+    - name: Add an Apt key for kathara
+      ansible.builtin.apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: 21805A48E6CBBA6B991ABE76646193862B759810
+        state: present
+
+    - name: Add kathara repo
+      apt_repository:
+        repo: ppa:katharaframework/kathara
+        state: present
+
+    - name: Install kathara
+      apt:
+        name: kathara
+        state: present
+        update_cache: yes

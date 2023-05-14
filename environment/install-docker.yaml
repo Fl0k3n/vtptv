@@ -1,0 +1,60 @@
+---
+- name: Install Docker
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install apt requirements
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      with_items:
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - gnupg
+        - lsb-release
+
+    - name: Add apt key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add docker-compose repo
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install docker
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-compose-plugin
+
+    - name: Install docker-compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: "0554"
+
+    - name: Install Docker module's dependencies
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Install Docker module's pip dependencies
+      pip:
+        name: "{{ item }}"
+      with_items:
+        - setuptools
+        - virtualenv
+        - docker
