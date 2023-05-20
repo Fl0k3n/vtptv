@@ -27,7 +27,9 @@ pyasn1==0.5.0
 pyasn1-modules==0.3.0
 pyparsing==3.0.9
 pyroute2==0.7.8
+pyserial==3.5
 python-dateutil==2.8.2
+python-dotenv==1.0.0
 python-utils==3.5.2
 PyYAML==6.0
 requests==2.30.0
