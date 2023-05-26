@@ -6,7 +6,7 @@ class DeviceEnabledMode:
         self.console = console
 
     def __enter__(self) -> None:
-        self.console.write("\n")
+        self.console.write_newline()
         self.console.write("enable")
 
     def __exit__(self, exc_type, exc_value, exc_tb) -> None:

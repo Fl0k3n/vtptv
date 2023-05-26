@@ -3,6 +3,7 @@ from parser.VirtualDeviceCommandsParser import VirtualDeviceCommandsParser
 
 from Kathara.parser.netkit.LabParser import LabParser
 
+from configurer.DeviceConfigurer import DeviceConfigurer
 from configurer.DeviceInitializer import DeviceInitializer
 from configurer.utils.DeviceConsolePortManager import DeviceConsolePortManager
 from mapper.VirtualDeviceBuilder import VirtualDeviceBuilder
@@ -11,9 +12,10 @@ from model.Topology import Topology
 
 
 class VirtualToPhysicalConverter:
-    def __init__(self, kathara_lab_path: str, device_initializer: DeviceInitializer) -> None:
+    def __init__(self, kathara_lab_path: str, device_initializer: DeviceInitializer, device_configurer: DeviceConfigurer) -> None:
         self.kathara_lab_path = kathara_lab_path
         self.device_initializer = device_initializer
+        self.device_configurer = device_configurer
         self.lab = None
 
     def convert(self) -> Topology:
@@ -41,4 +43,6 @@ class VirtualToPhysicalConverter:
             device.accept_physical_initializer(self.device_initializer)
 
     def _configure_protocols(self, topo: Topology) -> None:
-        pass
+        for device in topo.traverse():
+            logging.debug(f"configuring: {device.name}")
+            device.accept_physical_configurer(self.device_configurer)

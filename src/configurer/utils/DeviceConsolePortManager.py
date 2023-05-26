@@ -5,11 +5,11 @@ from typing import Callable
 class DeviceConsolePortManager(ABC):
 
     @abstractmethod
-    def write(self, data: str) -> None:
+    def write(self, command: str) -> None:
         pass
 
     @abstractmethod
-    def read(self) -> str:
+    def write_and_get_output(self, command: str) -> str:
         pass
 
     @abstractmethod
@@ -24,9 +24,15 @@ class DeviceConsolePortManager(ABC):
     def __exit__(self, exc_type, exc_value, exc_tb):
         pass
 
-    def write_failable(self, data: str,
+    def write_failable(self, command: str,
                        success_predicate: Callable[[str], bool] = lambda resp: 'invalid' not in resp.lower()) -> bool:
-        self.flush_input()
-        self.write(data)
-        resp = self.read()
-        return success_predicate(resp)
+        return success_predicate(self.write_and_get_output(command))
+
+    def write_newline(self) -> None:
+        self.write("\n")
+
+
+class TimeoutException(Exception):
+    def __init__(self, input_command: str, output: str) -> None:
+        super().__init__(
+            f'Reading output of command: "{input_command.strip()}" timed out\ngot output: {output}')

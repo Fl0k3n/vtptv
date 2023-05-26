@@ -10,7 +10,7 @@ class VirtualDeviceCommandsParser:
     def parse(self, commands: list[str]) -> list[NodeAction]:
         actions = []
 
-        commands_iter = self._preprocess(commands).__iter__()
+        commands_iter = iter(self._preprocess(commands))
         for command in commands_iter:
             try:
                 action = self._dispatch(command, commands_iter)
@@ -18,12 +18,13 @@ class VirtualDeviceCommandsParser:
             except Exception as ex:
                 print(f'Failed to parse command: {command}')
                 print(ex)
-        
+
         return actions
 
     def _preprocess(self, commands: list[str]) -> list[str]:
         stripped = [command.strip() for command in commands]
-        without_comments = [command for command in stripped if not command.startswith(self.COMMENT)]
+        without_comments = [
+            command for command in stripped if not command.startswith(self.COMMENT)]
         return without_comments
 
     def _dispatch(self, command: str, iter: Iterator[str]) -> NodeAction:

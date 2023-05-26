@@ -20,10 +20,10 @@ class VirtualDeviceBuilder:
         self.parser = parser
 
     def build_from_machine(self, machine: KatharaMachine) -> Node:
-        if machine.get_image() == self._HOST_IMAGE:
+        if machine.get_image() == self._HOST_IMAGE or machine.name.startswith('pc'):  # TODO
             return self._create_host(machine)
         return self._create_router(machine)
-    
+
     def build_switch(self, link: KatharaLink) -> Switch:
         interfaces = self._create_interfaces(len(link.machines))
         switch_vname = link.name
@@ -37,16 +37,16 @@ class VirtualDeviceBuilder:
 
         for action in self.parser.parse(startup_commands):
             action.apply(router)
-        
+
         return router
 
     def _create_host(self, machine: KatharaMachine) -> Host:
         interfaces = self._create_interfaces(len(machine.interfaces))
         return Host(machine.name, interfaces)
-    
+
     def _create_interfaces(self, count: int) -> list[Interface]:
-        return [Interface.down_virtual(f'{Node.VIRTUAL_INTERFACE_PREFIX}{idx}') for idx in range(count)]    
-    
+        return [Interface.down_virtual(f'{Node.VIRTUAL_INTERFACE_PREFIX}{idx}') for idx in range(count)]
+
     def _get_startup_commands(self, machine: KatharaMachine) -> list[str]:
         if machine.startup_path:
             try:
@@ -56,4 +56,3 @@ class VirtualDeviceBuilder:
                 print(f'Failed to read startup commands of {machine.name}')
                 print(e)
         return []
-

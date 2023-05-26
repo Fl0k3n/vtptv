@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from configurer.DeviceInitializer import DeviceInitializer
+    from configurer.DeviceConfigurer import DeviceConfigurer
 
 from model.links.Interface import Interface
 
@@ -37,7 +38,11 @@ class Node(ABC):
         raise Exception(f"All interfaces of {self.name} are already used")
 
     @abstractmethod
-    def accept_physical_initializer(initilizer: 'DeviceInitializer') -> None:
+    def accept_physical_initializer(self, initilizer: 'DeviceInitializer') -> None:
+        pass
+
+    @abstractmethod
+    def accept_physical_configurer(self, configurer: 'DeviceConfigurer') -> None:
         pass
 
     def __str__(self) -> str:

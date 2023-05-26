@@ -7,6 +7,7 @@ from model.devices.Router import Router
 from model.devices.Switch import Switch
 from model.links.Interface import Interface
 from utils.netutil import convert_to_dot_notation
+from utils.userio import require_router_console_connected
 
 
 class DeviceInitializer:
@@ -19,6 +20,8 @@ class DeviceInitializer:
         self._netconf_iface_counter = 0
 
     def init_router(self, router: Router) -> None:
+        require_router_console_connected(router.name)
+
         # assuming device is already booted (and user declined initial config dialog)
         with self.console_port_manager as console:
             router.netconf_interface = self._init_physical_interfaces(
@@ -27,8 +30,8 @@ class DeviceInitializer:
             self._configure_physical_interface(
                 router.netconf_interface, console)
 
-            self._enable_ssh_access(router.netconf_interface, console)
-            self._enable_netconf_access(router.netconf_interface, console)
+            self._enable_ssh_access(router.name, console)
+            self._enable_netconf_access(console)
 
     def init_switch(self, switch: Switch) -> None:
         print(
@@ -52,10 +55,8 @@ class DeviceInitializer:
 
     def _read_device_physical_interface_names(self, console: DeviceConsolePortManager) -> list[str]:
         with DeviceEnabledMode(console):
-            console.flush_input()
-            console.write("show ip interface brief")
-
-            ifaces_info = console.read()
+            ifaces_info = console.write_and_get_output(
+                "show ip interface brief")
             iface_names = []
 
             for line in ifaces_info.splitlines():
@@ -98,6 +99,8 @@ class DeviceInitializer:
                 console.write('exit')
 
     def _enable_ssh_access(self, hostname: str, console: DeviceConsolePortManager) -> None:
+        logging.debug(f"configuring ssh access on {hostname}")
+
         with DeviceEnabledMode(console):
             with DeviceConfigMode(console):
                 console.write(f"hostname {hostname}")
@@ -114,10 +117,14 @@ class DeviceInitializer:
                 console.write("line vty 0")
                 console.write("login local")
                 console.write("transport input ssh")
-                logging.debug("enabled ssh")
+
+        logging.debug(f"enabled ssh of {hostname}")
 
     def _enable_netconf_access(self, console: DeviceConsolePortManager) -> None:
+        logging.debug(f"configuring netconf")
+
         with DeviceEnabledMode(console):
             with DeviceConfigMode(console):
                 console.write('netconf-yang')
-                logging.debug("enabled netconf")
+
+        logging.debug(f"configured netconf")
