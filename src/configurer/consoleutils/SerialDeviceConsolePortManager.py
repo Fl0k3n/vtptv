@@ -2,7 +2,7 @@ import time
 
 import serial
 
-from configurer.utils.DeviceConsolePortManager import (
+from configurer.consoleutils.DeviceConsolePortManager import (
     DeviceConsolePortManager, TimeoutException)
 
 

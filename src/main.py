@@ -2,10 +2,11 @@ import logging
 
 from dotenv import dotenv_values
 
+from configurer.consoleutils.SerialDeviceConsolePortManager import \
+    SerialDeviceConsolePort
 from configurer.DeviceConfigurer import DeviceConfigurer
 from configurer.DeviceInitializer import DeviceInitializer
-from configurer.utils.SerialDeviceConsolePortManager import \
-    SerialDeviceConsolePort
+from configurer.netconfutils.NetconfManager import NetconfManager
 from utils.TopologyVisualizer import TopologyVisualizer
 from VirtualToPhysicalConverter import VirtualToPhysicalConverter
 
@@ -25,9 +26,11 @@ def main():
     )
 
     device_initializer = DeviceInitializer(
-        serial_console_port_mgr, "cisco", "testing")
+        serial_console_port_mgr, config['SSH_LOGIN'], config['SSH_PASS'])
 
-    device_configurer = DeviceConfigurer()
+    netconf_mgr = NetconfManager(config['SSH_LOGIN'], config['SSH_PASS'])
+
+    device_configurer = DeviceConfigurer(netconf_mgr)
 
     converter = VirtualToPhysicalConverter(
         config['LAB_PATH'], device_initializer, device_configurer)

@@ -1,4 +1,5 @@
-from configurer.utils.DeviceConsolePortManager import DeviceConsolePortManager
+from configurer.consoleutils.DeviceConsolePortManager import \
+    DeviceConsolePortManager
 
 
 class DeviceEnabledMode:

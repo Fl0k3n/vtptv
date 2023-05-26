@@ -1,7 +1,9 @@
 import logging
 
-from configurer.utils.DeviceConsolePortManager import DeviceConsolePortManager
-from configurer.utils.DeviceMode import DeviceConfigMode, DeviceEnabledMode
+from configurer.consoleutils.DeviceConsolePortManager import \
+    DeviceConsolePortManager
+from configurer.consoleutils.DeviceMode import (DeviceConfigMode,
+                                                DeviceEnabledMode)
 from model.devices.Host import Host
 from model.devices.Router import Router
 from model.devices.Switch import Switch
