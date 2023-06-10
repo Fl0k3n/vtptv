@@ -4,6 +4,7 @@ from configurer.netconfutils.NetconfManager import NetconfManager
 from model.devices.Host import Host
 from model.devices.Router import Router
 from model.devices.Switch import Switch
+from model.devices.Node import Node
 from utils.userio import require_router_netconf_port_connected
 
 
@@ -21,9 +22,14 @@ class DeviceConfigurer:
                 logging.debug(f"initializing {iface} with netconf")
                 mgr.configure_interface(
                     iface.physical_name, iface.ipv4, iface.netmask, iface.enabled)
+            self.configure_static_routes(mgr, router)
 
     def configure_switch(self, switch: Switch) -> None:
         pass
 
     def configure_host(self, host: Host) -> None:
         pass
+
+    def configure_static_routes(self, mgr: NetconfManager, node: Node) -> None:
+        for static_route in node.static_routes:
+            mgr.configure_static_route(static_route)
