@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 
+from model.routing.RoutingConfig import RoutingConfig
+
 if TYPE_CHECKING:
     from configurer.DeviceInitializer import DeviceInitializer
     from configurer.DeviceConfigurer import DeviceConfigurer
@@ -12,6 +14,7 @@ class Router(Node):
     def __init__(self, name: str, interfaces: list[Interface], neighbours: set[Node] = None) -> None:
         super().__init__(name, interfaces, neighbours)
         self.netconf_interface: Interface = None
+        self.routing_configs: list[RoutingConfig] = []
 
     def accept_physical_initializer(self, initilizer: 'DeviceInitializer') -> None:
         initilizer.init_router(self)

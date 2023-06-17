@@ -6,6 +6,8 @@ from model.devices.Router import Router
 from model.devices.Switch import Switch
 from utils.userio import require_router_netconf_port_connected
 
+from configurer.RoutingConfigurer import RoutingConfigurer
+
 
 class DeviceConfigurer:
     def __init__(self, netconf_mgr: NetconfManager) -> None:
@@ -21,6 +23,11 @@ class DeviceConfigurer:
                 logging.debug(f"initializing {iface} with netconf")
                 mgr.configure_interface(
                     iface.physical_name, iface.ipv4, iface.netmask, iface.enabled)
+
+            routing_configurer = RoutingConfigurer(mgr)
+            for routing_config in router.routing_configs:
+                logging.debug(f"initializing {routing_config} with netconf")
+                routing_config.accept_configurer(routing_configurer, router)
 
     def configure_switch(self, switch: Switch) -> None:
         pass

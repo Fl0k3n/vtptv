@@ -1,3 +1,4 @@
+import logging
 from parser.VirtualDeviceCommandsParser import \
     VirtualDeviceCommandsParser as Parser
 
@@ -10,6 +11,8 @@ from model.devices.Node import Node
 from model.devices.Router import Router
 from model.devices.Switch import Switch
 from model.links.Interface import Interface
+
+from parser.RIPRoutingParser import RIPRoutingParser
 
 
 class VirtualDeviceBuilder:
@@ -38,6 +41,12 @@ class VirtualDeviceBuilder:
         for action in self.parser.parse(startup_commands):
             action.apply(router)
 
+        rip_config_commands = self._get_rip_config_commands(machine)
+        if len(rip_config_commands) > 0:
+            config = RIPRoutingParser.parse(rip_config_commands)
+            logging.debug(f"parsed RIP {config}")
+            router.routing_configs.append(config)
+
         return router
 
     def _create_host(self, machine: KatharaMachine) -> Host:
@@ -54,5 +63,15 @@ class VirtualDeviceBuilder:
                     return f.readlines()
             except Exception as e:
                 print(f'Failed to read startup commands of {machine.name}')
+                print(e)
+        return []
+
+    def _get_rip_config_commands(self, machine: KatharaMachine) -> list[str]:
+        if machine.folder:
+            try:
+                with open(f"{machine.folder}/etc/quagga/ripd.conf", 'r') as f:
+                    return f.readlines()
+            except Exception as e:
+                print(f'Failed to read RIP config commands of {machine.name}')
                 print(e)
         return []

@@ -41,3 +41,7 @@ class NetconfManager:
 '''
         resp = self.client.edit_config(data, target='running')
         logging.debug(f"configure interface resp: {resp}")
+
+    def configure(self, data: str) -> None:
+        resp = self.client.edit_config(data, target='running')
+        logging.debug(f"configure interface resp: {resp}")
