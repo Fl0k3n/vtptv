@@ -19,8 +19,7 @@ class VirtualDeviceCommandsParser:
                 action = self._dispatch(command, commands_iter)
                 actions.append(action)
             except Exception as ex:
-                print(f'Failed to parse command: {command}')
-                print(ex)
+                logging.error(f'Failed to parse command: {command}', exc_info=ex)
 
         return actions
 

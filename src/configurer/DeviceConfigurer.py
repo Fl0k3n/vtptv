@@ -2,12 +2,14 @@ import logging
 
 from configurer.netconfutils.NetconfManager import NetconfManager
 from model.devices.Host import Host
+from model.devices.Node import Node
 from model.devices.Router import Router
 from model.devices.Switch import Switch
-from model.devices.Node import Node
 from utils.userio import require_router_netconf_port_connected
 
-
+'''
+Configures physical devices based on virtual configuration.
+'''
 class DeviceConfigurer:
     def __init__(self, netconf_mgr: NetconfManager) -> None:
         self.netconf_mgr = netconf_mgr

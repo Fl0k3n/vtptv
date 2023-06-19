@@ -4,10 +4,10 @@ if TYPE_CHECKING:
     from configurer.DeviceInitializer import DeviceInitializer
     from configurer.DeviceConfigurer import DeviceConfigurer
 
-from model.devices.Node import Node
+from model.devices.CiscoNetworkNode import CiscoNetworkNode
 
 
-class Switch(Node):
+class Switch(CiscoNetworkNode):
     def accept_physical_initializer(self, initilizer: 'DeviceInitializer') -> None:
         initilizer.init_switch(self)
 
