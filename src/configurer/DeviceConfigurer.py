@@ -7,10 +7,12 @@ from model.devices.Router import Router
 from model.devices.Switch import Switch
 from utils.userio import require_router_netconf_port_connected
 
-'''
-Configures physical devices based on virtual configuration.
-'''
+
 class DeviceConfigurer:
+    """
+    Configures physical devices based on virtual configuration.
+    """
+
     def __init__(self, netconf_mgr: NetconfManager) -> None:
         self.netconf_mgr = netconf_mgr
 

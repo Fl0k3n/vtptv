@@ -128,4 +128,3 @@ if __name__ == '__main__':
     # get_loopback_config(m)
     # configure_loopback(m)
     # delete_loopback(m)
-

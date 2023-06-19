@@ -1,3 +1,7 @@
+def dot_notation_to_decimal(dotted: str) -> int:
+    return sum(int(byte) * (256 ** (3 - i)) for i, byte in enumerate(dotted.split('.')))
+
+
 def convert_to_dot_notation(netmask: int) -> str:
     full_ones = netmask // 8
     full_zeros = 4 - full_ones
@@ -14,6 +18,6 @@ def convert_to_dot_notation(netmask: int) -> str:
     return '.'.join(parts)
 
 
-if __name__ == '__main__':
-    for i in range(33):
-        print(convert_to_dot_notation(i))
+def netmask_from_dot_notation(netmask: str) -> int:
+    decimal_mask = dot_notation_to_decimal(netmask)
+    return sum((decimal_mask & (1 << i)) >> i for i in range(32))

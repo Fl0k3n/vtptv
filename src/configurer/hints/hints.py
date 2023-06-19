@@ -33,13 +33,13 @@ class ConfigurationHintsExtractor:
             elif line.startswith('ip route'):
                 hints.append(RouterConfigurationHint.STATIC_ROUTING)
             elif line.startswith('interface') and \
-                any(line.strip().startswith('ip address') for line in self._lines_before_run_conf_delim(lines_iter)):
+                    any(line.startswith('ip address') for line in self._subcommands(lines_iter)):
                 hints.append(RouterConfigurationHint.IP_INTERFACE)
 
         return hints
         
-    def _lines_before_run_conf_delim(self, lines_iter: Iterator[str]) -> list[str]:
-        return [line for line in lines_iter if not line.strip().startswith(self._RUN_CONF_DELIM)]
+    def _subcommands(self, lines_iter: Iterator[str]) -> list[str]:
+        return [line.strip() for line in lines_iter if not line.strip().startswith(self._RUN_CONF_DELIM)]
 
     def extract_switch_config_hints(self, switch_running_cfg: str) -> list[SwitchConfigurationHint]:
         # TODO
