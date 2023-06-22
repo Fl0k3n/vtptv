@@ -1,5 +1,6 @@
-from src.model.devices.Node import Node
-from src.parser.actions.Action import NodeAction
+from parser.actions.Action import NodeAction
+
+from model.devices.Node import Node
 
 
 class AddStaticRouteAction(NodeAction):
@@ -12,7 +13,8 @@ class AddStaticRouteAction(NodeAction):
         self.interface = interface
 
     def apply(self, node: Node) -> None:
-        node.add_static_route(self.network, self.netmask, self.gateway, self.interface)
+        node.add_static_route(self.network, self.netmask,
+                              self.gateway, self.interface)
 
     def __str__(self) -> str:
         return f'AddStaticRouteAction({self.network}/{self.netmask} via {self.gateway} on {self.interface})'

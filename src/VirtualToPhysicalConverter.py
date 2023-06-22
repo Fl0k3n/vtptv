@@ -16,15 +16,16 @@ class VirtualToPhysicalConverter:
         self.device_initializer = device_initializer
         self.device_configurer = device_configurer
 
-    def convert(self) -> Topology:
+    def convert(self, configure_devices=True) -> Topology:
         logging.debug("preparing topology")
         topo = self._create_topology_from_virtual()
 
-        logging.debug("initilizing devices")
-        self._initialize_devices(topo)
+        if configure_devices:
+            logging.debug("initilizing devices")
+            self._initialize_devices(topo)
 
-        logging.debug("configuring protocols")
-        self._configure_protocols(topo)
+            logging.debug("configuring protocols")
+            self._configure_protocols(topo)
 
         return topo
 

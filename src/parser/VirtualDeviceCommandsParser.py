@@ -1,10 +1,9 @@
 import logging
 import re
 from parser.actions.Action import NodeAction
+from parser.actions.AddStaticRouteAction import AddStaticRouteAction
 from parser.actions.ConfigureInterfaceAction import ConfigureInterfaceAction
 from typing import Iterator
-
-from src.parser.actions.AddStaticRouteAction import AddStaticRouteAction
 
 
 class VirtualDeviceCommandsParser:
@@ -19,7 +18,8 @@ class VirtualDeviceCommandsParser:
                 action = self._dispatch(command, commands_iter)
                 actions.append(action)
             except Exception as ex:
-                logging.error(f'Failed to parse command: {command}', exc_info=ex)
+                logging.error(
+                    f'Failed to parse command: {command}', exc_info=ex)
 
         return actions
 
@@ -47,14 +47,11 @@ class VirtualDeviceCommandsParser:
 
     def _parse_route_add_command(self, command: str) -> NodeAction:
         pattern = r'^route add (-net (\S+)/(\S+)|default) gw (\S+) dev (\S+)$'
-        # 1 - default
-        # 2,3 - network, netmask
-        # 4 - gateway
-        # 5 - interface
 
         match = re.match(pattern, command)
 
-        target_network, target_mask = ("0.0.0.0", 0) if match.group(1) == 'default' else (match.group(2), int(match.group(3)))
+        target_network, target_mask = ("0.0.0.0", 0) if match.group(
+            1) == 'default' else (match.group(2), int(match.group(3)))
 
         action = AddStaticRouteAction(
             network=target_network,

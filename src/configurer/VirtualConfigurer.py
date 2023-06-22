@@ -40,6 +40,9 @@ class VirtualConfigurer:
         if RouterConfigurationHint.RIP in hints:
             self._setup_rip_config(router)
 
+        # TODO assert (maybe with CDP) that at this point router has all information
+        # required to build topology
+
     def _setup_ip_interface_config(self, router: Router) -> None:
         router.interfaces = self.netconf_mgr.get_interface_configs()
         for idx, interface in enumerate(router.interfaces):
