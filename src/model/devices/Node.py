@@ -1,11 +1,20 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractproperty
+from enum import Enum
 from typing import TYPE_CHECKING
+
+from model.routes.StaticRoute import StaticRoute
 
 if TYPE_CHECKING:
     from configurer.DeviceInitializer import DeviceInitializer
     from configurer.DeviceConfigurer import DeviceConfigurer
 
 from model.links.Interface import Interface
+
+
+class NodeRole(Enum):
+    HOST = 0
+    ROUTER = 1
+    SWITCH = 2
 
 
 class Node(ABC):
@@ -16,7 +25,7 @@ class Node(ABC):
         self.interfaces = {
             interface.virtual_name: interface for interface in interfaces}
         self.neighbours = neighbours if neighbours is not None else set()
-        self.static_routes = []
+        self.static_routes: list[StaticRoute] = []
 
     def add_neighbour(self, neighbour: "Node", interface_vname: str, neigh_interface_vname: str) -> None:
         self.neighbours.add(neighbour)
@@ -32,8 +41,8 @@ class Node(ABC):
         my_int.use()
         neighbour_int.use()
 
-    def add_static_route(self, network: str, netmask: int, gateway: str, interface: str) -> None:
-        self.static_routes.append((network, netmask, gateway, interface))
+    def add_static_route(self, route: StaticRoute) -> None:
+        self.static_routes.append(route)
 
     def get_next_free_virtual_interface_name(self) -> str:
         for name, iface in self.interfaces.items():
@@ -47,6 +56,10 @@ class Node(ABC):
 
     @abstractmethod
     def accept_physical_configurer(self, configurer: 'DeviceConfigurer') -> None:
+        pass
+
+    @abstractproperty
+    def role(self) -> NodeRole:
         pass
 
     def __str__(self) -> str:

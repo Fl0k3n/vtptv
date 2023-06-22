@@ -14,11 +14,12 @@ class VirtualTopologyBuilder:
         self.device_builder = device_builder
 
     def build(self) -> Topology:
-        nodes = {name: self.device_builder.build_from_machine(machine) for name, machine in self.kathara_lab.machines.items()}
+        nodes = {name: self.device_builder.build_from_machine(
+            machine) for name, machine in self.kathara_lab.machines.items()}
         switches = self._create_switches()
 
         self._connect_devices(nodes, switches)
-        nodes.update(switches)       
+        nodes.update(switches)
 
         return Topology(list(nodes.values()))
 
@@ -38,27 +39,31 @@ class VirtualTopologyBuilder:
 
             for link in machine.interfaces.values():
                 collision_domain = link.name
-                iface_name = self._extract_virtual_interface_name(link, machine)
+                iface_name = self._extract_virtual_interface_name(
+                    link, machine)
 
                 if collision_domain in switches:
                     switch = switches[collision_domain]
-                    node.add_neighbour(switch, iface_name, switch.get_next_free_virtual_interface_name())
+                    node.add_neighbour(
+                        switch, iface_name, switch.get_next_free_virtual_interface_name())
                 else:
                     m1, m2 = link.machines.values()
                     neighbour_machine = m1 if m2.name == machine_name else m2
                     if neighbour_machine.name > machine_name:
                         node.add_neighbour(
-                            nodes[neighbour_machine.name], 
+                            nodes[neighbour_machine.name],
                             iface_name,
-                            self._extract_virtual_interface_name(link, neighbour_machine)
+                            self._extract_virtual_interface_name(
+                                link, neighbour_machine)
                         )
-    
+
     def _extract_virtual_interface_name(self, link: KatharaLink, machine: KatharaMachine) -> str:
         for iface_num, iface in machine.interfaces.items():
             if iface.name == link.name:
                 return f'{Node.VIRTUAL_INTERFACE_PREFIX}{iface_num}'
 
-        raise Exception(f"machine {machine.name} doesn't have an interface in domain {link.name}")
+        raise Exception(
+            f"machine {machine.name} doesn't have an interface in domain {link.name}")
 
     def _collision_domain_requires_switch(self, link: KatharaLink) -> bool:
         cd_represents_direct_connection = len(link.machines) == 2

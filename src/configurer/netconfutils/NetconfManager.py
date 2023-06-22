@@ -61,9 +61,9 @@ class NetconfManager:
                <static-routes>
                   <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ipv4-unicast-routing">
                      <route>
-                        <destination-prefix>{static_route.network}/{static_route.netmask}</destination-prefix>
+                        <destination-prefix>{static_route.ipv4}/{static_route.netmask}</destination-prefix>
                         <next-hop>
-                           <next-hop-address>{static_route.gateway}</next-hop-address>
+                           <next-hop-address>{static_route.gateway_ipv4}</next-hop-address>
                         </next-hop>
                      </route>
                   </ipv4>

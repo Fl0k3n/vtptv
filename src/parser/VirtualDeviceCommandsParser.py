@@ -5,6 +5,8 @@ from parser.actions.AddStaticRouteAction import AddStaticRouteAction
 from parser.actions.ConfigureInterfaceAction import ConfigureInterfaceAction
 from typing import Iterator
 
+from model.routes.StaticRoute import StaticRoute
+
 
 class VirtualDeviceCommandsParser:
     COMMENT = "#"
@@ -47,18 +49,16 @@ class VirtualDeviceCommandsParser:
 
     def _parse_route_add_command(self, command: str) -> NodeAction:
         pattern = r'^route add (-net (\S+)/(\S+)|default) gw (\S+) dev (\S+)$'
-
         match = re.match(pattern, command)
 
-        target_network, target_mask = ("0.0.0.0", 0) if match.group(
-            1) == 'default' else (match.group(2), int(match.group(3)))
+        gateway, interface = match.group(4), match.group(5)
 
-        action = AddStaticRouteAction(
-            network=target_network,
-            netmask=target_mask,
-            gateway=match.group(4),
-            interface=match.group(5)
-        )
+        if match.group(1) == StaticRoute.DEFAULT_DESCRIPTOR:
+            route = StaticRoute.default(gateway, interface)
+        else:
+            route = StaticRoute(ipv4=match.group(2), netmask=int(
+                match.group(3)), gateway_ipv4=gateway, interface_name=interface)
 
+        action = AddStaticRouteAction(route)
         logging.debug(action)
         return action

@@ -10,6 +10,7 @@ from configurer.DeviceInitializer import DeviceInitializer
 from configurer.hints.hints import ConfigurationHintsExtractor
 from configurer.netconfutils.NetconfManager import NetconfManager
 from configurer.VirtualConfigurer import VirtualConfigurer
+from mapper.TopologySerializer import TopologySerializer
 from PhysicalToVirtualConverter import PhysicalToVirtualConverter
 from utils.TopologyVisualizer import TopologyVisualizer
 from VirtualToPhysicalConverter import VirtualToPhysicalConverter
@@ -71,7 +72,7 @@ def physical_to_virtual(routers: int, switches: int):
 @click.command('visualize', help="visualize virtual topology graph")
 def visualize_virtual():
     config = init_config()
-    converter = VirtualToPhysicalConverter(config['LAB'], None, None)
+    converter = VirtualToPhysicalConverter(config['LAB_PATH'], None, None)
     topo = converter.convert(configure_devices=False)
 
     TopologyVisualizer().visualize(topo)
@@ -84,7 +85,13 @@ def cli():
 
 
 if __name__ == '__main__':
-    cli.add_command(virtual_to_physical)
-    cli.add_command(physical_to_virtual)
-    cli.add_command(visualize_virtual)
-    cli()
+    # cli.add_command(virtual_to_physical)
+    # cli.add_command(physical_to_virtual)
+    # cli.add_command(visualize_virtual)
+    # cli()
+    from pathlib import Path
+    config = init_config()
+    converter = VirtualToPhysicalConverter(config['LAB_PATH'], None, None)
+    topo = converter.convert(configure_devices=False)
+
+    TopologySerializer().serialize_as_kathara_file_tree(topo, Path('/home/flok3n/misc/test_topo'), overwrite=True)

@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from configurer.DeviceInitializer import DeviceInitializer
     from configurer.DeviceConfigurer import DeviceConfigurer
 
-from model.devices.Node import Node
+from model.devices.Node import Node, NodeRole
 
 
 class Host(Node):
@@ -13,3 +13,7 @@ class Host(Node):
 
     def accept_physical_configurer(self, configurer: 'DeviceConfigurer') -> None:
         configurer.configure_host(self)
+
+    @property
+    def role(self) -> NodeRole:
+        return NodeRole.HOST
