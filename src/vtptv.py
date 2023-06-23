@@ -94,4 +94,5 @@ if __name__ == '__main__':
     converter = VirtualToPhysicalConverter(config['LAB_PATH'], None, None)
     topo = converter.convert(configure_devices=False)
 
-    TopologySerializer().serialize_as_kathara_file_tree(topo, Path('/home/flok3n/misc/test_topo'), overwrite=True)
+    print('x')
+    # TopologySerializer().serialize_as_kathara_file_tree(topo, Path('/home/flok3n/misc/test_topo'), overwrite=True)

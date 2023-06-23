@@ -24,7 +24,7 @@ class Node(ABC):
         self.name = name
         self.interfaces = {
             interface.virtual_name: interface for interface in interfaces}
-        self.neighbours = neighbours if neighbours is not None else set()
+        self.neighbours: set["Node"] = neighbours if neighbours is not None else set()
         self.static_routes: list[StaticRoute] = []
 
     def add_neighbour(self, neighbour: "Node", interface_vname: str, neigh_interface_vname: str) -> None:
