@@ -1,7 +1,10 @@
+import logging
 import re
 from parser.actions.Action import NodeAction
 from parser.actions.ConfigureInterfaceAction import ConfigureInterfaceAction
 from typing import Iterator
+
+from src.parser.actions.AddStaticRouteAction import AddStaticRouteAction
 
 
 class VirtualDeviceCommandsParser:
@@ -30,6 +33,8 @@ class VirtualDeviceCommandsParser:
     def _dispatch(self, command: str, iter: Iterator[str]) -> NodeAction:
         if command.startswith('ifconfig'):
             return self._parse_ifconfig_command(command)
+        elif command.startswith('route add'):
+            return self._parse_route_add_command(command)
 
     def _parse_ifconfig_command(self, command: str) -> NodeAction:
         pattern = r'^ifconfig\s+(\S+)\s+(\S+)/(\d+)\s+(\S+)$'
@@ -40,3 +45,24 @@ class VirtualDeviceCommandsParser:
             netmask=match.group(3),
             state=match.group(4)
         )
+
+    def _parse_route_add_command(self, command: str) -> NodeAction:
+        pattern = r'^route add (-net (\S+)/(\S+)|default) gw (\S+) dev (\S+)$'
+        # 1 - default
+        # 2,3 - network, netmask
+        # 4 - gateway
+        # 5 - interface
+
+        match = re.match(pattern, command)
+
+        target_network, target_mask = ("0.0.0.0", 0) if match.group(1) == 'default' else (match.group(2), int(match.group(3)))
+
+        action = AddStaticRouteAction(
+            network=target_network,
+            netmask=target_mask,
+            gateway=match.group(4),
+            interface=match.group(5)
+        )
+
+        logging.debug(action)
+        return action
