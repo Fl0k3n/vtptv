@@ -32,17 +32,20 @@ class VirtualDeviceBuilder:
     def _create_router(self, machine: KatharaMachine) -> Router:
         interfaces = self._create_interfaces(len(machine.interfaces))
         router = Router(machine.name, interfaces)
-
-        startup_commands = self._get_startup_commands(machine)
-
-        for action in self.parser.parse(startup_commands):
-            action.apply(router)
-
+        self._apply_startup_commands(machine, router)
         return router
 
     def _create_host(self, machine: KatharaMachine) -> Host:
         interfaces = self._create_interfaces(len(machine.interfaces))
-        return Host(machine.name, interfaces)
+        host = Host(machine.name, interfaces)
+        self._apply_startup_commands(machine, host)
+        return host
+
+    def _apply_startup_commands(self, machine: KatharaMachine, node: Node):
+        startup_commands = self._get_startup_commands(machine)
+
+        for action in self.parser.parse(startup_commands):
+            action.apply(node)
 
     def _create_interfaces(self, count: int) -> list[Interface]:
         return [Interface.down_virtual(f'{Node.VIRTUAL_INTERFACE_PREFIX}{idx}') for idx in range(count)]

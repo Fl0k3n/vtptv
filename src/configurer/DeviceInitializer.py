@@ -11,7 +11,7 @@ from model.devices.Host import Host
 from model.devices.Router import Router
 from model.devices.Switch import Switch
 from model.links.Interface import Interface
-from utils.netutil import convert_to_dot_notation
+from utils.netutil import netmask_to_dot_notation
 from utils.userio import (require_router_console_connected,
                           require_switch_console_connected)
 
@@ -52,7 +52,8 @@ class DeviceInitializer:
     def init_router_from_physical(self, name: str) -> Router:
         require_router_console_connected(name)
         router = Router(name, [])
-        self._init_cisco_device_from_physical(router, lambda console: self._get_name_of_free_interface(console))
+        self._init_cisco_device_from_physical(
+            router, lambda console: self._get_name_of_free_interface(console))
         return router
 
     def init_switch_from_physical(self, name: str) -> Switch:
@@ -67,17 +68,17 @@ class DeviceInitializer:
             with DeviceEnabledMode(console):
                 self._disable_CLI_paging(console)
                 running_conf = self._read_running_config(console)
-                
-                netconf_iface = self._create_netconf_interface(netconf_iface_name_supplier(console))
+
+                netconf_iface = self._create_netconf_interface(
+                    netconf_iface_name_supplier(console))
                 self._configure_physical_interface(netconf_iface, console)
 
                 self._enable_ssh_access(node.name)
                 self._enable_netconf_access(console)
                 self._enable_cisco_discovery_protocol(console)
-        
+
         node.netconf_interface = netconf_iface
         node.running_conf_data = running_conf
-
 
     def _init_physical_interfaces(self, virtual_ifaces: list[Interface], console: DeviceConsolePortManager) -> Interface:
         interface_names = self._read_device_physical_interface_names(console)
@@ -108,21 +109,22 @@ class DeviceInitializer:
                 f"Failed to read any interface names, got: {ifaces_info}")
 
         return iface_names
-    
+
     def _read_running_config(self, console: DeviceConsolePortManager) -> str:
         # TODO consider fetching it with netconf instead
         return console.write_and_get_output("show running-config")
 
     def _get_name_of_free_interface(self, console: DeviceConsolePortManager) -> str:
         ifaces_info = console.write_and_get_output("show ip interface brief")
-        
-        pattern = re.compile(r'(\S*ethernet\S*)\s+\S+\s+yes\s+\S+\s+administratively down\s+down')
+
+        pattern = re.compile(
+            r'(\S*ethernet\S*)\s+\S+\s+yes\s+\S+\s+administratively down\s+down')
         for line in ifaces_info.splitlines():
             if match := pattern.search(line):
                 return match.group(1)
-            
-        raise Exception(f"Failed to find free interface, got output: {ifaces_info}")
-                
+
+        raise Exception(
+            f"Failed to find free interface, got output: {ifaces_info}")
 
     def _create_netconf_interface(self, physical_name: str) -> Interface:
         # TODO don't hardcode and assert it doesn't overlap with ips in topology or on local machine
@@ -131,7 +133,7 @@ class DeviceInitializer:
         mask = 24
 
         return Interface(None, physical_name, ipv4, mask, False)
-    
+
     def _disable_CLI_paging(self, console: DeviceConsolePortManager):
         console.write('terminal length 0')
 
@@ -142,7 +144,7 @@ class DeviceInitializer:
         with DeviceConfigMode(console):
             console.write(f"interface {interface.physical_name}")
             success = console.write_failable(
-                f'ip address {interface.ipv4} {convert_to_dot_notation(interface.netmask)}')
+                f'ip address {interface.ipv4} {netmask_to_dot_notation(interface.netmask)}')
 
             if not success:
                 # TODO

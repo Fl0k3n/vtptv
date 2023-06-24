@@ -49,7 +49,7 @@ class VirtualDeviceCommandsParser:
         return ConfigureInterfaceAction(
             virtual_iface_name=match.group(1),
             ipv4=match.group(2),
-            netmask=match.group(3),
+            netmask=int(match.group(3)),
             state=match.group(4)
         )
 

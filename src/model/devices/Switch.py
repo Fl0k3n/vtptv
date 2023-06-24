@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from model.devices.Node import NodeRole
+from model.devices.Node import Node, NodeRole
 
 if TYPE_CHECKING:
     from configurer.DeviceInitializer import DeviceInitializer
@@ -15,6 +15,9 @@ class Switch(CiscoNetworkNode):
 
     def accept_physical_configurer(self, configurer: 'DeviceConfigurer') -> None:
         configurer.configure_switch(self)
+
+    def get_common_network(self, neigh: Node) -> str | None:
+        return neigh.get_common_network(self) if neigh.role != NodeRole.SWITCH else None
 
     @property
     def role(self) -> NodeRole:

@@ -5,7 +5,7 @@ from ncclient import manager
 
 from model.links.Interface import Interface
 from model.routes.StaticRoute import StaticRoute
-from utils.netutil import convert_to_dot_notation, netmask_from_dot_notation
+from utils.netutil import netmask_from_dot_notation, netmask_to_dot_notation
 
 
 class NetconfManager:
@@ -34,7 +34,7 @@ class NetconfManager:
                 <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
                     <address>
                         <ip>{ipv4}</ip>
-                        <netmask>{convert_to_dot_notation(mask)}</netmask>
+                        <netmask>{netmask_to_dot_notation(mask)}</netmask>
                     </address>
                 </ipv4>
                 <ipv6 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip"/>

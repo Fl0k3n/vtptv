@@ -17,16 +17,15 @@ class DeviceConfigurer:
         self.netconf_mgr = netconf_mgr
 
     def configure_router(self, router: Router) -> None:
-        print("Assert interface of this PC has 9.9.9.10/24 ip addr")  # TODO
+        # TODO
+        print(
+            "Assert interface of this PC has interface in same network as router (see .env)")
         require_router_netconf_port_connected(
             router.name, router.netconf_interface.physical_name)
 
-        with self.netconf_mgr as mgr:
-            for iface in router.interfaces.values():
-                logging.debug(f"initializing {iface} with netconf")
-                mgr.configure_interface(
-                    iface.physical_name, iface.ipv4, iface.netmask, iface.enabled)
-            self.configure_static_routes(mgr, router)
+        with self.netconf_mgr:
+            self._configure_interfaces(self.netconf_mgr, router)
+            self._configure_static_routes(self.netconf_mgr, router)
 
     def configure_switch(self, switch: Switch) -> None:
         pass
@@ -34,6 +33,12 @@ class DeviceConfigurer:
     def configure_host(self, host: Host) -> None:
         pass
 
-    def configure_static_routes(self, mgr: NetconfManager, node: Node) -> None:
+    def _configure_interfaces(self, mgr: NetconfManager, node: Node) -> None:
+        for iface in node.interfaces.values():
+            logging.debug(f"initializing {iface} with netconf")
+            mgr.configure_interface(
+                iface.physical_name, iface.ipv4, iface.netmask, iface.enabled)
+
+    def _configure_static_routes(self, mgr: NetconfManager, node: Node) -> None:
         for static_route in node.static_routes:
             mgr.configure_static_route(static_route)

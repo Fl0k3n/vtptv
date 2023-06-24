@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 import click
 from dotenv import dotenv_values
@@ -45,12 +46,12 @@ def virtual_to_physical():
     device_configurer = DeviceConfigurer(netconf_mgr)
 
     converter = VirtualToPhysicalConverter(
-        config['LAB_PATH'], device_initializer, device_configurer)
+        config['VIRT_TO_PHY_INITIAL_PATH'], device_initializer, device_configurer)
 
     converter.convert()
 
 
-@click.command('ptv', help="convert physical configuration to virtual, command expectes "
+@click.command('ptv', help="convert physical configuration to virtual, command expects "
                            "number of ROUTERS and SWITCHES in physical topology")
 @click.argument('routers', default=False, type=int)
 @click.argument('switches', default=False, type=int)
@@ -66,13 +67,17 @@ def physical_to_virtual(routers: int, switches: int):
 
     topo = converter.convert(routers_count=routers, switches_count=switches)
 
+    TopologySerializer().serialize_as_kathara_file_tree(
+        topo, Path(config['PHY_TO_VIRT_INITIAL_PATH']), overwrite=False)
+
     TopologyVisualizer().visualize(topo)
 
 
 @click.command('visualize', help="visualize virtual topology graph")
 def visualize_virtual():
     config = init_config()
-    converter = VirtualToPhysicalConverter(config['LAB_PATH'], None, None)
+    converter = VirtualToPhysicalConverter(
+        Path(config['VIRT_TO_PHY_INITIAL_PATH']), None, None)
     topo = converter.convert(configure_devices=False)
 
     TopologyVisualizer().visualize(topo)
@@ -85,14 +90,7 @@ def cli():
 
 
 if __name__ == '__main__':
-    # cli.add_command(virtual_to_physical)
-    # cli.add_command(physical_to_virtual)
-    # cli.add_command(visualize_virtual)
-    # cli()
-    from pathlib import Path
-    config = init_config()
-    converter = VirtualToPhysicalConverter(config['LAB_PATH'], None, None)
-    topo = converter.convert(configure_devices=False)
-
-    print('x')
-    # TopologySerializer().serialize_as_kathara_file_tree(topo, Path('/home/flok3n/misc/test_topo'), overwrite=True)
+    cli.add_command(virtual_to_physical)
+    cli.add_command(physical_to_virtual)
+    cli.add_command(visualize_virtual)
+    cli()

@@ -3,7 +3,8 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-from model.devices.Node import NodeRole
+from model.devices.Node import Node, NodeRole
+from model.devices.Router import Router
 from model.Topology import Topology
 
 
@@ -32,9 +33,9 @@ class TopologySerializer:
             for device in topo.nodes:
                 if device.role in (NodeRole.ROUTER, NodeRole.HOST):
                     image_name = self._ROUTER_IMAGE if device.role == NodeRole.ROUTER else self._HOST_IMAGE
-                    f.write(f'\n{device.name}[image]={image_name}\n')
+                    f.write(f'\n{device.name}[image]="{image_name}"\n')
 
-                    for neigh_idx, neighbour in enumerate(device.neighbours):
+                    for neigh_idx, neighbour in enumerate(device.neighbours.values()):
                         cd_name = None
                         if neighbour.role != NodeRole.SWITCH:
                             devices = frozenset([device.name, neighbour.name])
@@ -51,17 +52,44 @@ class TopologySerializer:
     def _write_startup_configs(self, topo: Topology, root_dir: Path):
         for router in topo.routers:
             with open(str(root_dir.joinpath(f'{router.name}.startup').absolute()), 'w') as f:
-                for iface in router.interfaces.values():
-                    f.write(
-                        f'ifconfig {iface.virtual_name} {iface.ipv4}/{iface.netmask} up\n')
+                f.writelines(
+                    self._create_ip_addressing_commands(router) +
+                    self._create_static_routing_commands(router) +
+                    self._create_nat_commands(router)
+                )
 
-                for route in router.static_routes:
-                    if route.is_default():
-                        f.write(
-                            f'route add default gw {route.gateway_ipv4} dev {route.interface_name}\n')
-                    else:
-                        f.write(
-                            f'route add -net {route.ipv4}/{route.netmask} gw {route.gateway_ipv4} dev {route.interface_name}\n')
+    def _create_ip_addressing_commands(self, node: Node) -> list[str]:
+        cmds = []
+        for iface in node.interfaces.values():
+            cmds.append(
+                f'ifconfig {iface.virtual_name} {iface.ipv4}/{iface.netmask} up\n')
+        return cmds
+
+    def _create_nat_commands(self, router: Router) -> list[str]:
+        cmds = []
+        for snat_rule in router.snat_rules:
+            cmds.append(
+                f'iptables -t nat -A POSTROUTING -s {snat_rule.original_src_ipv4} -j SNAT' +
+                f' --to-source {snat_rule.target_src_ipv4}\n')
+        for dnat_rule in router.dnat_rules:
+            cmds.append(
+                f'iptables -t nat -A OUTPUT -d {dnat_rule.original_dest_ipv4} -j DNAT' +
+                f' --to-destination {dnat_rule.target_dest_ipv4}\n')
+        for onat_rule in router.overload_nat_rules:
+            cmds.append(
+                f'iptables -t nat -A POSTROUTING -s {onat_rule.src_ipv4}/{onat_rule.src_netmask} -j MASQUERADE\n')
+        return cmds
+
+    def _create_static_routing_commands(self, node: Node) -> list[str]:
+        cmds = []
+        for route in node.static_routes:
+            if route.is_default():
+                cmds.append(
+                    f'route add default gw {route.gateway_ipv4} dev {route.interface_name}\n')
+            else:
+                cmds.append(
+                    f'route add -net {route.ipv4}/{route.netmask} gw {route.gateway_ipv4} dev {route.interface_name}\n')
+        return cmds
 
     def _create_directory_tree(self, topo: Topology, root_dir: Path, overwrite: bool):
         if not overwrite:

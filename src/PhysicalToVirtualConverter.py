@@ -3,6 +3,7 @@ from pathlib import Path
 
 from configurer.DeviceInitializer import DeviceInitializer
 from configurer.VirtualConfigurer import VirtualConfigurer
+from mapper.TopologySerializer import TopologySerializer
 from model.devices.Router import Router
 from model.devices.Switch import Switch
 from model.Topology import Topology
@@ -23,9 +24,6 @@ class PhysicalToVirtualConverter:
 
         logging.debug("building topology")
         return self._build_topology(routers, switches)
-
-    def save_as_kathara_file_tree(self, topo: Topology, root_dir: Path):
-        pass
 
     def _build_topology(self, routers: list[Router], switches: list[Switch]) -> Topology:
         # TODO setup connections
