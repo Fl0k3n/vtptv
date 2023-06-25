@@ -90,8 +90,7 @@ def cli():
 
 
 if __name__ == '__main__':
-    # cli.add_command(virtual_to_physical)
-    # cli.add_command(physical_to_virtual)
-    # cli.add_command(visualize_virtual)
-    # cli()
-    visualize_virtual()
+    cli.add_command(virtual_to_physical)
+    cli.add_command(physical_to_virtual)
+    cli.add_command(visualize_virtual)
+    cli()
