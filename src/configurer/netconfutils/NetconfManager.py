@@ -2,9 +2,8 @@ import logging
 
 from ncclient import manager
 
-from utils.netutil import convert_to_dot_notation
-
 from src.model.routes.StaticRoute import StaticRoute
+from utils.netutil import convert_to_dot_notation
 
 
 class NetconfManager:
@@ -47,8 +46,9 @@ class NetconfManager:
     def configure(self, data: str) -> None:
         resp = self.client.edit_config(data, target='running')
         logging.debug(f"configure interface resp: {resp}")
-    # https://github.com/ArRosid/netconf-static-route/blob/master/static_route_template.xml
+
     def configure_static_route(self, static_route: StaticRoute):
+        # https://github.com/ArRosid/netconf-static-route/blob/master/static_route_template.xml
         data = f'''
 <config>
    <routing xmlns="urn:ietf:params:xml:ns:yang:ietf-routing">
