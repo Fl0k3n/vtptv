@@ -4,6 +4,8 @@ from ncclient import manager
 
 from utils.netutil import convert_to_dot_notation
 
+from src.model.routes.StaticRoute import StaticRoute
+
 
 class NetconfManager:
     def __init__(self, ssh_login: str, ssh_pass: str) -> None:
@@ -45,3 +47,34 @@ class NetconfManager:
     def configure(self, data: str) -> None:
         resp = self.client.edit_config(data, target='running')
         logging.debug(f"configure interface resp: {resp}")
+    # https://github.com/ArRosid/netconf-static-route/blob/master/static_route_template.xml
+    def configure_static_route(self, static_route: StaticRoute):
+        data = f'''
+<config>
+   <routing xmlns="urn:ietf:params:xml:ns:yang:ietf-routing">
+      <routing-instance>
+         <name>default</name>
+         <description>default-vrf [read-only]</description>
+         <interfaces/>
+         <routing-protocols>
+            <routing-protocol>
+               <type>static</type>
+               <name>1</name>
+               <static-routes>
+                  <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ipv4-unicast-routing">
+                     <route>
+                        <destination-prefix>{static_route.network}/{static_route.netmask}</destination-prefix>
+                        <next-hop>
+                           <next-hop-address>{static_route.gateway}</next-hop-address>
+                        </next-hop>
+                     </route>
+                  </ipv4>
+               </static-routes>
+            </routing-protocol>
+         </routing-protocols>
+      </routing-instance>
+   </routing>
+</config>
+        '''
+        resp = self.client.edit_config(data, target='running')
+        logging.debug(f"configure static route resp: {resp}")

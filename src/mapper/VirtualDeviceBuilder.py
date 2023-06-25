@@ -1,4 +1,5 @@
 import logging
+from parser.OSPFRoutingParser import OSPFRoutingParser
 from parser.VirtualDeviceCommandsParser import \
     VirtualDeviceCommandsParser as Parser
 
@@ -47,6 +48,11 @@ class VirtualDeviceBuilder:
             logging.debug(f"parsed RIP {config}")
             router.routing_configs.append(config)
 
+        ospf_config_commands = self._get_ospf_config_commands(machine)
+        if len(ospf_config_commands) > 0:
+            config = OSPFRoutingParser.parse(ospf_config_commands)
+            logging.debug(f"parsed RIP {config}")
+            router.routing_configs.append(config)
         return router
 
     def _create_host(self, machine: KatharaMachine) -> Host:
@@ -73,5 +79,14 @@ class VirtualDeviceBuilder:
                     return f.readlines()
             except Exception as e:
                 print(f'Failed to read RIP config commands of {machine.name}')
+                print(e)
+        return []
+    def _get_ospf_config_commands(self, machine: KatharaMachine) -> list[str]:
+        if machine.folder:
+            try:
+                with open(f"{machine.folder}/etc/quagga/ospfd.conf", 'r') as f:
+                    return f.readlines()
+            except Exception as e:
+                print(f'Failed to read OSPF config commands of {machine.name}')
                 print(e)
         return []

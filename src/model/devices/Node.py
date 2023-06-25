@@ -16,6 +16,7 @@ class Node(ABC):
         self.interfaces = {
             interface.virtual_name: interface for interface in interfaces}
         self.neighbours = neighbours if neighbours is not None else set()
+        self.static_routes = []
 
     def add_neighbour(self, neighbour: "Node", interface_vname: str, neigh_interface_vname: str) -> None:
         self.neighbours.add(neighbour)
@@ -30,6 +31,9 @@ class Node(ABC):
 
         my_int.use()
         neighbour_int.use()
+
+    def add_static_route(self, network: str, netmask: int, gateway: str, interface: str) -> None:
+        self.static_routes.append((network, netmask, gateway, interface))
 
     def get_next_free_virtual_interface_name(self) -> str:
         for name, iface in self.interfaces.items():
