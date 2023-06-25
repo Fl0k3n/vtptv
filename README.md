@@ -1,6 +1,6 @@
 # Virtual To Physical To Virtual
 
-Project created for the Future Internet Technologies course (TIP-23 project).
+Project created for the Future Internet Technologies course. Docs (in Polish) can be found at [docs_pl.pdf](./docs_pl.pdf).
 
 The goal of this project is to convert the configuration of a virtual (Kathara project) topology with various networking protocols running to the same working topology with the same protocols but on physical Cisco devices, and vice versa.
 
