@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from model.devices.Node import Node, NodeRole
 from model.links.Interface import Interface
+from model.routing.RoutingConfig import OSPFConfig, RIPConfig
 from model.translations.Nat import DNat, OverloadNat, SNat
 
 if TYPE_CHECKING:
@@ -17,6 +18,8 @@ class Router(CiscoNetworkNode):
         self.snat_rules: list[SNat] = []
         self.dnat_rules: list[DNat] = []
         self.overload_nat_rules: list[OverloadNat] = []
+        self.rip_config: RIPConfig = None
+        self.ospf_config: OSPFConfig = None
 
     def accept_physical_initializer(self, initilizer: 'DeviceInitializer') -> None:
         initilizer.init_router(self)

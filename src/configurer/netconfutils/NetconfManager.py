@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from ncclient import manager
 
 from model.links.Interface import Interface
-from model.routes.StaticRoute import StaticRoute
+from model.routing.StaticRoute import StaticRoute
 from utils.netutil import netmask_from_dot_notation, netmask_to_dot_notation
 
 
@@ -20,11 +20,15 @@ class NetconfManager:
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
-        # TODO
+        # TODO cleanup
         pass
 
+    def configure(self, netconf_xml_data: str) -> None:
+        resp = self.client.edit_config('running', netconf_xml_data)
+        logging.debug(f"configure interface resp: {resp}")
+
     def configure_interface(self, name: str, ipv4: str, mask: int, enable: bool = True):
-        data = f'''
+        self.configure(f'''
 <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
         <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
             <interface>
@@ -41,13 +45,11 @@ class NetconfManager:
             </interface>
         </interfaces>
 </config>
-'''
-        resp = self.client.edit_config('running', data)
-        logging.debug(f"configure interface resp: {resp}")
+''')
 
-    # https://github.com/ArRosid/netconf-static-route/blob/master/static_route_template.xml
     def configure_static_route(self, static_route: StaticRoute):
-        data = f'''
+        # https://github.com/ArRosid/netconf-static-route/blob/master/static_route_template.xml
+        self.configure(f'''
 <config>
    <routing xmlns="urn:ietf:params:xml:ns:yang:ietf-routing">
       <routing-instance>
@@ -73,9 +75,7 @@ class NetconfManager:
       </routing-instance>
    </routing>
 </config>
-        '''
-        resp = self.client.edit_config('running', data)
-        logging.debug(f"configure static route resp: {resp}")
+        ''')
 
     def get_static_routes(self) -> list[StaticRoute]:
         query = f'''

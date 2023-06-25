@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod, abstractproperty
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from model.routes.StaticRoute import StaticRoute
+from model.routing.StaticRoute import StaticRoute
 
 if TYPE_CHECKING:
     from configurer.DeviceInitializer import DeviceInitializer

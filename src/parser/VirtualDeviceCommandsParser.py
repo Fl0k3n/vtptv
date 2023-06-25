@@ -6,7 +6,7 @@ from parser.actions.AddTranslationRuleAction import AddTranslationRuleAction
 from parser.actions.ConfigureInterfaceAction import ConfigureInterfaceAction
 from typing import Iterator
 
-from model.routes.StaticRoute import StaticRoute
+from model.routing.StaticRoute import StaticRoute
 from model.translations.Nat import DNat, OverloadNat, SNat
 
 

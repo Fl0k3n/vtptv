@@ -1,7 +1,7 @@
 from parser.actions.Action import NodeAction
 
 from model.devices.Node import Node
-from model.routes.StaticRoute import StaticRoute
+from model.routing.StaticRoute import StaticRoute
 
 
 class AddStaticRouteAction(NodeAction):

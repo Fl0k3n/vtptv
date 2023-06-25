@@ -1,9 +1,7 @@
 import logging
-from pathlib import Path
 
 from configurer.DeviceInitializer import DeviceInitializer
 from configurer.VirtualConfigurer import VirtualConfigurer
-from mapper.TopologySerializer import TopologySerializer
 from model.devices.Router import Router
 from model.devices.Switch import Switch
 from model.Topology import Topology
