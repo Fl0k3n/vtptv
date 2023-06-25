@@ -1,6 +1,6 @@
 import re
 
-from model.routing.OSPFConfig import OSPFConfig
+from model.routing.RoutingConfig import OSPFConfig, OspfNetworkInfo
 
 
 def parse_ospf_commands(commands: list[str]) -> OSPFConfig:
@@ -16,12 +16,12 @@ def parse_ospf_commands(commands: list[str]) -> OSPFConfig:
 def _parse_network(config: OSPFConfig, command: str) -> None:
     # command: 'network {ip/mask} area {area}'
     pattern = r"network (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d+) area (\S+)"
-    matches = re.search(pattern, command.strip("\n"))
-    if matches:
-        ip = matches.group(1)
-        mask = int(matches.group(2))
-        area = matches.group(3)
-        config.enabled_networks.append((ip, mask, area))
+    if match := re.search(pattern, command.strip("\n")):
+        config.enabled_networks.append(OspfNetworkInfo(
+            ip=match.group(1),
+            mask=int(match.group(2)),
+            area=match.group(3)
+        ))
 
 
 def _parse_router_id(config: OSPFConfig, command: str) -> None:

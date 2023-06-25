@@ -1,13 +1,11 @@
-from typing import TYPE_CHECKING
 
+from model.devices.Router import Router
+from model.routing.RoutingConfig import OSPFConfig
 from utils.netutil import get_wildcard_mask
 
-if TYPE_CHECKING:
-    from model.devices.Router import Router
-    from model.routing.OSPFConfig import OSPFConfig
 
-
-def generate_ospf_xml(config: 'OSPFConfig') -> str:
+def generate_ospf_xml(router: Router) -> str:
+    config = router.ospf_config
     return f'''
 <config>
 <native>
@@ -22,7 +20,7 @@ def generate_ospf_xml(config: 'OSPFConfig') -> str:
 '''
 
 
-def _generate_networks(config: 'OSPFConfig') -> str:
+def _generate_networks(config: OSPFConfig) -> str:
     return f'''
     {"".join([_generate_network(network) for network in config.enabled_networks])}
 '''

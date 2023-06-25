@@ -1,9 +1,11 @@
 import logging
+import xml.etree.ElementTree as ET
 
 from ncclient import manager
 
-from src.model.routes.StaticRoute import StaticRoute
-from utils.netutil import convert_to_dot_notation
+from model.links.Interface import Interface
+from model.routing.StaticRoute import StaticRoute
+from utils.netutil import netmask_from_dot_notation, netmask_to_dot_notation
 
 
 class NetconfManager:
@@ -18,11 +20,15 @@ class NetconfManager:
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
-        # TODO
+        # TODO cleanup
         pass
 
+    def configure(self, netconf_xml_data: str) -> None:
+        resp = self.client.edit_config('running', netconf_xml_data)
+        logging.debug(f"configure interface resp: {resp}")
+
     def configure_interface(self, name: str, ipv4: str, mask: int, enable: bool = True):
-        data = f'''
+        self.configure(f'''
 <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
         <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
             <interface>
@@ -32,24 +38,18 @@ class NetconfManager:
                 <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
                     <address>
                         <ip>{ipv4}</ip>
-                        <netmask>{convert_to_dot_notation(mask)}</netmask>
+                        <netmask>{netmask_to_dot_notation(mask)}</netmask>
                     </address>
                 </ipv4>
                 <ipv6 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip"/>
             </interface>
         </interfaces>
 </config>
-'''
-        resp = self.client.edit_config(data, target='running')
-        logging.debug(f"configure interface resp: {resp}")
-
-    def configure(self, data: str) -> None:
-        resp = self.client.edit_config(data, target='running')
-        logging.debug(f"configure interface resp: {resp}")
+''')
 
     def configure_static_route(self, static_route: StaticRoute):
         # https://github.com/ArRosid/netconf-static-route/blob/master/static_route_template.xml
-        data = f'''
+        self.configure(f'''
 <config>
    <routing xmlns="urn:ietf:params:xml:ns:yang:ietf-routing">
       <routing-instance>
@@ -63,9 +63,9 @@ class NetconfManager:
                <static-routes>
                   <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ipv4-unicast-routing">
                      <route>
-                        <destination-prefix>{static_route.network}/{static_route.netmask}</destination-prefix>
+                        <destination-prefix>{static_route.ipv4}/{static_route.netmask}</destination-prefix>
                         <next-hop>
-                           <next-hop-address>{static_route.gateway}</next-hop-address>
+                           <next-hop-address>{static_route.gateway_ipv4}</next-hop-address>
                         </next-hop>
                      </route>
                   </ipv4>
@@ -75,6 +75,56 @@ class NetconfManager:
       </routing-instance>
    </routing>
 </config>
-        '''
-        resp = self.client.edit_config(data, target='running')
-        logging.debug(f"configure static route resp: {resp}")
+        ''')
+
+    def get_static_routes(self) -> list[StaticRoute]:
+        query = f'''
+<filter xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+    <ip>
+      <route>
+        <vrf>
+          <name>default</name>
+          <ip-route-interface-forwarding-list xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-ip"/>
+        </vrf>
+      </route>
+    </ip>
+  </native>
+</filter>
+'''
+        resp = self.client.get_config('running', query)
+        # TODO parse it
+        return []
+
+    def get_interface_configs(self) -> list[Interface]:
+        query = f'''
+<filter xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+        <interface></interface>
+    </interfaces>
+</filter>
+'''
+        resp = self.client.get_config('running', query)
+        interfaces = []
+
+        root = ET.fromstring(resp)
+        namespace = {'ns': 'urn:ietf:params:xml:ns:yang:ietf-interfaces'}
+        interfaces_xml = root.findall('.//ns:interface', namespace)
+        for interface_xml in interfaces_xml:
+            try:
+                name = interface_xml.find('ns:name', namespace).text
+                enabled = interface_xml.find('ns:enabled', namespace).text
+
+                if enabled != 'true':
+                    continue
+
+                ip_ns = {'ns': "urn:ietf:params:xml:ns:yang:ietf-ip"}
+                ipv4_xml = interface_xml.find('ns:ipv4', ip_ns)
+
+                ip = ipv4_xml.find('ns:address/ns:ip', ip_ns)
+                netmask = ipv4_xml.find('ns:address/ns:netmask', ip_ns)
+                interfaces.append(Interface(
+                    None, name, ip.text, netmask_from_dot_notation(netmask.text), True))
+            except:
+                continue
+        return interfaces

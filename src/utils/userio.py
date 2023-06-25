@@ -9,6 +9,10 @@ def require_router_console_connected(router_name: str):
         f'Console port of router {router_name} must be connected to proceed.', CONFIRMATION_PROMPT)
 
 
+def require_switch_console_connected(switch_name: str):
+    require_confirmation(
+        f'Console port of switch {switch_name} must be connected to proceed.', CONFIRMATION_PROMPT)
+
 def require_router_netconf_port_connected(router_name: str, interface_name: str):
     require_confirmation(
         f'Netconf port {interface_name} of router {router_name} must be connected to proceed.',

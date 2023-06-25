@@ -12,7 +12,6 @@ class NodeAction(ABC):
 
 class RouterAction(NodeAction):
 
-    @abstractmethod
     def apply(self, node: Router) -> None:
-        pass
+        assert isinstance(node, Router), f'Router config action requires node to be a router, got {node}'
     

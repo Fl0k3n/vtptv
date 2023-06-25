@@ -1,6 +1,6 @@
 import re
 
-from model.routing.RIPConfig import RIPConfig, RIPTimers
+from model.routing.RoutingConfig import RIPConfig, RIPTimers
 
 
 def parse_rip_commands(commands: list[str]) -> RIPConfig:

@@ -1,13 +1,11 @@
-from typing import TYPE_CHECKING
 
+from model.devices.Router import Router
+from model.routing.RoutingConfig import RIPConfig
 from utils.netutil import network_contains
 
-if TYPE_CHECKING:
-    from model.devices.Router import Router
-    from model.routing.RIPConfig import RIPConfig
 
-
-def generate_rip_xml(config: 'RIPConfig', router: 'Router') -> str:
+def generate_rip_xml(router: Router) -> str:
+    config = router.rip_config
     return f'''
 <config>
 <routing>
@@ -25,7 +23,7 @@ def generate_rip_xml(config: 'RIPConfig', router: 'Router') -> str:
 '''
 
 
-def _generate_redistribue(config: 'RIPConfig') -> str:
+def _generate_redistribue(config: RIPConfig) -> str:
     return f'''
 <redistribute>
 {"<connected/>" if config.redistribute.connected else ""}
@@ -34,7 +32,7 @@ def _generate_redistribue(config: 'RIPConfig') -> str:
 '''
 
 
-def _generate_timers(config: 'RIPConfig') -> str:
+def _generate_timers(config: RIPConfig) -> str:
     return f'''
 <timers>
 <update-interval>{config.timers.update}</update-interval>
@@ -44,7 +42,7 @@ def _generate_timers(config: 'RIPConfig') -> str:
 '''
 
 
-def _generate_interfaces(config: 'RIPConfig', router: 'Router') -> str:
+def _generate_interfaces(config: RIPConfig, router: Router) -> str:
     enabled_interfaces = config.enabled_interfaces
     for int_virt_name, interface in router.interfaces.items():
         if any(network_contains(network[0], network[1], interface.ipv4, interface.netmask) for network in config.enabled_networks):
@@ -56,7 +54,7 @@ def _generate_interfaces(config: 'RIPConfig', router: 'Router') -> str:
 '''
 
 
-def _generate_interface(config: 'RIPConfig', router: 'Router', int_virt_name: str) -> str:
+def _generate_interface(config: RIPConfig, router: Router, int_virt_name: str) -> str:
     return f'''
 <interface>
 <interface>{router.interfaces[int_virt_name].physical_name}</interface>
@@ -65,13 +63,13 @@ def _generate_interface(config: 'RIPConfig', router: 'Router', int_virt_name: st
 '''
 
 
-def _generate_neighbors(config: 'RIPConfig', router: 'Router', int_virt_name: str) -> str:
+def _generate_neighbors(config: RIPConfig, router: Router, int_virt_name: str) -> str:
     int_ip = router.interfaces[int_virt_name].ipv4
     int_mask = router.interfaces[int_virt_name].netmask
     neighbors = [neighbor for neighbor in config.neighbors if network_contains(
         int_ip, int_mask, neighbor)]
 
-    if len(neighbors) == 0:
+    if not neighbors:
         return ""
 
     return f'''

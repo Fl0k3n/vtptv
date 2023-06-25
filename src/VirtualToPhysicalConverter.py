@@ -1,5 +1,6 @@
 import logging
 from parser.VirtualDeviceCommandsParser import VirtualDeviceCommandsParser
+from pathlib import Path
 
 from Kathara.parser.netkit.LabParser import LabParser
 
@@ -11,25 +12,26 @@ from model.Topology import Topology
 
 
 class VirtualToPhysicalConverter:
-    def __init__(self, kathara_lab_path: str, device_initializer: DeviceInitializer, device_configurer: DeviceConfigurer) -> None:
+    def __init__(self, kathara_lab_path: Path, device_initializer: DeviceInitializer, device_configurer: DeviceConfigurer) -> None:
         self.kathara_lab_path = kathara_lab_path
         self.device_initializer = device_initializer
         self.device_configurer = device_configurer
 
-    def convert(self) -> Topology:
+    def convert(self, configure_devices=True) -> Topology:
         logging.debug("preparing topology")
         topo = self._create_topology_from_virtual()
 
-        logging.debug("initilizing devices")
-        self._initialize_devices(topo)
+        if configure_devices:
+            logging.debug("initilizing devices")
+            self._initialize_devices(topo)
 
-        logging.debug("configuring protocols")
-        self._configure_protocols(topo)
+            logging.debug("configuring protocols")
+            self._configure_protocols(topo)
 
         return topo
 
     def _create_topology_from_virtual(self) -> Topology:
-        lab = LabParser().parse(self.kathara_lab_path)
+        lab = LabParser().parse(str(self.kathara_lab_path.absolute()))
         parser = VirtualDeviceCommandsParser()
         device_builder = VirtualDeviceBuilder(lab, parser)
         topo = VirtualTopologyBuilder(lab, device_builder).build()
